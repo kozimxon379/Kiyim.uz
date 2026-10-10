@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useStore } from './Context';
 import { Moon, Sun, ShoppingBag, Heart, User, LogOut } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import Home from './pages/Home';
 import Shop from './pages/Shop';
@@ -16,6 +17,7 @@ import Faq from './pages/Faq';
 
 function Navbar() {
   const { theme, toggleTheme, lang, setLang, t, cart, favorites, user, logout } = useStore();
+  const [langOpen, setLangOpen] = useState(false);
   const location = useLocation();
   const isActive = (path) => location.pathname === path ? 'text-orange-500 font-bold' : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition';
 
@@ -38,11 +40,36 @@ function Navbar() {
           <div className="h-6 w-px bg-neutral-300 dark:bg-neutral-700 mx-2"></div>
 
           {/* Lang */}
-          <select value={lang} onChange={(e) => setLang(e.target.value)} className="bg-transparent text-neutral-900 dark:text-white outline-none cursor-pointer font-bold uppercase text-xs">
-            <option className="bg-white dark:bg-neutral-900 text-black dark:text-white" value="uz">UZ</option>
-            <option className="bg-white dark:bg-neutral-900 text-black dark:text-white" value="ru">RU</option>
-            <option className="bg-white dark:bg-neutral-900 text-black dark:text-white" value="en">EN</option>
-          </select>
+          <div className="relative">
+            <button 
+              onClick={() => setLangOpen(!langOpen)} 
+              onBlur={() => setTimeout(() => setLangOpen(false), 200)}
+              className="flex items-center gap-1 font-bold text-xs uppercase hover:text-orange-500 transition dark:text-white"
+            >
+              {lang} <span className={`text-[10px] transition-transform ${langOpen ? 'rotate-180' : ''}`}>▼</span>
+            </button>
+            <AnimatePresence>
+              {langOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-full mt-4 -right-2 w-24 bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-2xl shadow-xl overflow-hidden flex flex-col py-2 z-50"
+                >
+                  {['uz', 'ru', 'en'].map(l => (
+                    <button 
+                      key={l}
+                      onClick={() => { setLang(l); setLangOpen(false); }}
+                      className={`px-4 py-2 text-xs font-bold uppercase text-left transition-colors ${lang === l ? 'text-orange-500 bg-orange-50 dark:bg-orange-500/10' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800 dark:text-white'}`}
+                    >
+                      {l}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Theme */}
           <button onClick={toggleTheme} className="text-neutral-500 hover:text-orange-500 dark:text-neutral-400 dark:hover:text-orange-400 transition">
@@ -92,26 +119,50 @@ function Navbar() {
   );
 }
 
+const pageVariants = {
+  initial: { opacity: 0, y: 15 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+  exit: { opacity: 0, y: -15, transition: { duration: 0.3, ease: "easeIn" } }
+};
+
+function PageWrapper({ children }) {
+  return (
+    <motion.div initial="initial" animate="animate" exit="exit" variants={pageVariants} className="flex-1 flex flex-col w-full h-full">
+      {children}
+    </motion.div>
+  );
+}
+
+function AnimatedRoutes() {
+  const location = useLocation();
+  
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
+        <Route path="/shop" element={<PageWrapper><Shop /></PageWrapper>} />
+        <Route path="/cart" element={<PageWrapper><Cart /></PageWrapper>} />
+        <Route path="/favorites" element={<PageWrapper><Favorites /></PageWrapper>} />
+        <Route path="/admin" element={<PageWrapper><Admin /></PageWrapper>} />
+        <Route path="/about" element={<PageWrapper><About /></PageWrapper>} />
+        <Route path="/faq" element={<PageWrapper><Faq /></PageWrapper>} />
+        <Route path="/contact" element={<PageWrapper><Contact /></PageWrapper>} />
+        <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 export default function App() {
   const { theme } = useStore();
 
   return (
     <Router>
-      <div className="min-h-screen flex flex-col font-sans transition-colors duration-300 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-white">
+      <div className="min-h-screen flex flex-col font-sans transition-colors duration-300 bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-white overflow-hidden">
         <Navbar />
 
         <main className="flex-1 flex flex-col">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/favorites" element={<Favorites />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/faq" element={<Faq />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/login" element={<Login />} />
-          </Routes>
+          <AnimatedRoutes />
         </main>
 
         <footer className="border-t border-neutral-200 dark:border-neutral-900 bg-white dark:bg-neutral-950 py-8 text-center text-sm text-neutral-500 dark:text-neutral-500 transition-colors duration-300">

@@ -18,6 +18,9 @@ export default function Cart() {
     if (promo.toUpperCase() === 'KICKS10') {
       setDiscount(10);
       toast.success('10% chegirma qo\'llanildi!', { icon: '🎉' });
+    } else if (promo.toUpperCase() === 'YANGIYIL20') {
+      setDiscount(20);
+      toast.success('20% bayram chegirmasi qo\'llanildi!', { icon: '🎄' });
     } else {
       toast.error(t.invalidPromo);
       setDiscount(0);

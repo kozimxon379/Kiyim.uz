@@ -60,9 +60,28 @@ export const StoreProvider = ({ children }) => {
   // Cart & Favorites
   const [cart, setCart] = useState(() => JSON.parse(localStorage.getItem('cart')) || []);
   const [favorites, setFavorites] = useState(() => JSON.parse(localStorage.getItem('favorites')) || []);
+  const [orders, setOrders] = useState(() => {
+    const saved = JSON.parse(localStorage.getItem('orders'));
+    return (saved && saved.length >= 3) ? saved : [
+      { id: 101, date: '10.10.2026', customer: 'Sardor', phone: '+998 90 123 45 67', total: 1560000, items: 2, status: 'Yangi' },
+      { id: 102, date: '09.10.2026', customer: 'Kozimxon', phone: '+998 99 765 43 21', total: 4250000, items: 3, status: 'Yetkazilmoqda' },
+      { id: 103, date: '08.10.2026', customer: 'Aziza', phone: '+998 93 111 22 33', total: 850000, items: 1, status: 'Yakunlangan' }
+    ];
+  });
+  
+  const [customers, setCustomers] = useState(() => {
+    const saved = JSON.parse(localStorage.getItem('customers'));
+    return (saved && saved.length >= 3) ? saved : [
+      { id: 1, name: 'Sardor', phone: '+998 90 123 45 67', ordersCount: 2, totalSpent: 1560000, joined: '01.10.2026' },
+      { id: 2, name: 'Kozimxon', phone: '+998 99 765 43 21', ordersCount: 5, totalSpent: 5250000, joined: '15.09.2026' },
+      { id: 3, name: 'Aziza', phone: '+998 93 111 22 33', ordersCount: 1, totalSpent: 850000, joined: '10.10.2026' }
+    ];
+  });
   
   useEffect(() => localStorage.setItem('cart', JSON.stringify(cart)), [cart]);
   useEffect(() => localStorage.setItem('favorites', JSON.stringify(favorites)), [favorites]);
+  useEffect(() => localStorage.setItem('orders', JSON.stringify(orders)), [orders]);
+  useEffect(() => localStorage.setItem('customers', JSON.stringify(customers)), [customers]);
 
   const toggleFav = (product) => {
     setFavorites(prev => {
@@ -104,7 +123,9 @@ export const StoreProvider = ({ children }) => {
       user, login, logout,
       products, setProducts,
       cart, addToCart, removeFromCart, clearCart,
-      favorites, toggleFav
+      favorites, toggleFav,
+      orders, setOrders,
+      customers, setCustomers
     }}>
       {children}
     </StoreContext.Provider>
